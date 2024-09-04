@@ -74,7 +74,7 @@ class AuthenticatedSessionController extends Controller
 
     //$request->session()->regenerateToken();
     $sesiones_cerradas = $request->user()->tokens()->delete();
-    return redirect('/');
+    //return redirect('/');
     return response()->json(['message'=>"logout",'sesiones_cerradas'=>"$sesiones_cerradas"]);
     }
 

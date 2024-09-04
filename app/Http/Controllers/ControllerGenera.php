@@ -15,7 +15,25 @@ class ControllerGenera extends Controller
             'idnotas' => 'required|exists:notas,id',
         ]);
 
-        $genera = Genera::create($datosValidados);
+        $user = User::find($datosValidados['idusuario']);
+        $notaId = $datosValidados['idnotas'];
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Usuario no encontrado',
+            ], 404);
+        }
+
+        $user->notas()->attach($notaId);
+
+        $user = User::find($datosValidados['idusuario']);
+        $notas = $user->notas;
+
+        return response()->json([
+            'message' => 'Nota relacionada exitosamente',
+            'user' => $user,
+            'notas' => $notas
+        ], 201);
     }
 
 }

@@ -29,7 +29,7 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 Route::post('/users', [ControllerUser::class, 'store']);
 
 //Esta ruta ejecuta la funcion de actualizar los datos de un usuario.
-Route::put('/users/{id}', [ControllerUser::class, 'update']);
+Route::middleware(['auth:sanctum'])->put('/users/actualizar', [ControllerUser::class, 'update']);
 
 //Esta ruta ejecuta la funcion de eliminar un usuario.
 Route::delete('/users/{id}', [ControllerUser::class, 'destroy']);
@@ -42,10 +42,10 @@ Route::middleware(['auth:sanctum'])->post('/logout',
 [AuthenticatedSessionController::class, 'logout']);//->name('api.logout');
 
 //Esta ruta ejecuta la funcion de mostrar los datos de un usuario en el perfil.
-Route::middleware('auth:api')->get('/users', [ControllerUser::class, 'show']);
+Route::middleware('auth:api')->post('/users/ver', [ControllerUser::class, 'show']);
 
 //Esta ruta ejecuta la funcion de cambiar la contraseña del usuario.
-Route::post('/users/cambiarcontraseña', [ControllerUser::class, 'cambiarContraseña'])->name('users.cambiarcontraseña');
+Route::middleware('auth:sanctum')->post('/users/cambiarcontraseña', [ControllerUser::class, 'cambiarContraseña']);
 
 
 //Rutas de Grupo.

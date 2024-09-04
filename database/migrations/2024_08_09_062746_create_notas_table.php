@@ -17,8 +17,8 @@ return new class extends Migration
             $table->timestamp('finalizacion')->nullable();
             $table->string('descripcion',300);
             $table->string('categoria',45);
-            $table->enum('prioridad', ['baja', 'media', 'alta']);
-            $table->boolean('asignacion');
+            $table->enum('prioridad', ['Baja', 'Media', 'Alta']);
+            $table->boolean('asignacion')->default(false);
         });
     }
 

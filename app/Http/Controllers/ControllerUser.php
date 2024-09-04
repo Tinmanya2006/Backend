@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class ControllerUser extends Controller
 {
@@ -36,30 +39,33 @@ class ControllerUser extends Controller
     //Esta funcion deberia mostrar los datos en el perfil, se debe probar.
     public function show(Request $request)
     {
+        $user = Auth::user();
         return response()->json($request->user());
     }
 
     //Esta funcion actualiza los datos del usuario, se debe probar.
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
         //Esto busca al usuario por su id para poder actualizar sus datos.
-        $user = User::find($id);
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['mensaje' => 'Usuario no autenticado'], 401);
+        }
 
         //Esto valida los datos que llegan del Frontend.
         $datosValidados = $request->validate(
             [
-                'nickname' => 'unique:users|max:20',
-                'password' => 'max:40|confirmed',
-                'biografia' => 'max:120',
+                'nickname' => 'sometimes|unique:users|max:20',
+                'biografia' => 'sometimes|max:120',
             ]
         );
 
         //Esto actualiza los datos del usuario, si los datos se validaron correctamente.
         if ($user) {
             $user->update([
-                'nickname' => $datosValidados['nickname'],
-                'password' => isset($datosValidados['password']) ? Hash::make($datosValidados['password']) : $user->password,
-                'biografia' => $datosValidados['biografia'],
+                'nickname' => $datosValidados['nickname'] ?? $user->nickname,
+                'biografia' => $datosValidados['biografia'] ?? $user->biografia,
             ]);
 
             //Esto muestra dos mensajes si se han actualizado los datos correctamente
@@ -91,11 +97,16 @@ class ControllerUser extends Controller
     //esta funcion sirve para cambiar la contraseña, se debe probar.
     public function cambiarContraseña(Request $request)
     {
+        if (!Auth::check()) {
+            return response()->json(['message' => 'No estás autenticado.'], 401);
+        }
+
         //Esto valida los datos que llegan del Frontend.
         $datosValidados = $request->validate([
             'password' => 'required',
             'newpassword' => 'required|min:8|confirmed',
         ]);
+
 
         //Esto autentica al usuario que se utiliza.
         $user = Auth::user();

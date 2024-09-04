@@ -15,12 +15,16 @@ class ControllerNota extends Controller
         $datosvalidados = $request->validate([
             'descripcion' => 'max:300',
             'categoria' => 'required|max:45',
-            'prioridad' => 'required|in:baja,media,alta',
-            'asignacion' => 'required|boolean',
+            'prioridad' => 'required|in:Baja,Media,Alta',
+            'asignacion' => 'boolean',
         ]);
 
         //Esto crea una nota si los datos se validaron correctamente.
         $nota = Nota::create($datosvalidados);
+
+        return response()->json([
+            'messaje' => 'La nota ha sido creada correctamente'
+        ]);
 
     }
 

@@ -15,7 +15,7 @@ class ControllerGrupo extends Controller
         $datosValidados = $request->validate([
             'nombre' => 'required|max:45',
             'admin' => 'max:20|in:usuario,admin',
-            'nickname' => 'required|unique:grupos|max:20',
+            'nickname' => 'unique:grupos|max:20',
             'descripcion' => 'max:200',
         ]);
 
