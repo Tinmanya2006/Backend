@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('biografia',120)->default('');
             $table->rememberToken();
             $table->timestamps();
+            $table->string('api_token')->nullable();
         });
     }
 

@@ -63,10 +63,12 @@ Route::delete('/grupos/{id}', [ControllerGrupo::class, 'destroy']);
 //Rutas de Nota.
 
 //Esta ruta ejecuta la funcion de Crear una Nota.
-Route::post('/notas', [ControllerNota::class, 'store']);
+Route::middleware('auth:sanctum')->post('/notas', [ControllerNota::class, 'store']);
 
 //Esta ruta ejecuta la funcion de eliminar una Nota.
 Route::delete('/notas/{id}', [ControllerNota::class, 'destroy']);
+
+Route::middleware('auth:sanctum')->get('/notas/ver', [ControllerNota::class, 'verNotas']);
 
 
 //Rutas de Chat.

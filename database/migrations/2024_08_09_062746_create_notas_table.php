@@ -19,6 +19,9 @@ return new class extends Migration
             $table->string('categoria',45);
             $table->enum('prioridad', ['Baja', 'Media', 'Alta']);
             $table->boolean('asignacion')->default(false);
+            $table->unsignedBigInteger('idusuario')->notnullable();
+
+            $table->foreign('idusuario')->references('id')->on('users');
         });
     }
 

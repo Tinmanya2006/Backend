@@ -26,7 +26,6 @@ class ControllerGenera extends Controller
 
         $user->notas()->attach($notaId);
 
-        $user = User::find($datosValidados['idusuario']);
         $notas = $user->notas;
 
         return response()->json([

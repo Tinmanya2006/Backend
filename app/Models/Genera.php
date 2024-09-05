@@ -12,14 +12,14 @@ class Genera extends Model
     public function notas()
     {
 
-        return $this->belongsToMany(User::class, 'generas', 'idnotas', 'idusuario');
+        return $this->belongsToMany(User::class, 'generas', 'idusuario', 'idnotas');
 
     }
 
     public function users()
     {
 
-        return $this->belongsToMany(Nota::class, 'generas', 'idusuario', 'idnotas');
+        return $this->belongsToMany(Nota::class, 'generas', 'idnotas', 'idusuario');
 
     }
 }

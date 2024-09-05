@@ -16,5 +16,11 @@ class Nota extends Model
         'categoria',
         'prioridad',
         'asignacion',
+        'idusuario',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
