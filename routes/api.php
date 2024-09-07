@@ -42,10 +42,12 @@ Route::middleware(['auth:sanctum'])->post('/logout',
 [AuthenticatedSessionController::class, 'logout']);//->name('api.logout');
 
 //Esta ruta ejecuta la funcion de mostrar los datos de un usuario en el perfil.
-Route::middleware('auth:api')->post('/users/ver', [ControllerUser::class, 'show']);
+Route::middleware('auth:sanctum')->get('/users/ver', [ControllerUser::class, 'show']);
 
 //Esta ruta ejecuta la funcion de cambiar la contraseña del usuario.
 Route::middleware('auth:sanctum')->post('/users/cambiarcontraseña', [ControllerUser::class, 'cambiarContraseña']);
+
+Route::middleware('auth:sanctum')->post('/users/avatar', [ControllerUser::class, 'updateAvatar']);
 
 
 //Rutas de Grupo.
@@ -59,6 +61,9 @@ Route::put('/grupos/{id}', [ControllerGrupo::class, 'update']);
 //Esta ruta ejecuta la funcion de eliminar un grupo.
 Route::delete('/grupos/{id}', [ControllerGrupo::class, 'destroy']);
 
+Route::group([ 'namespace' => 'App\Http\Controllers'], function () {
+    Route::apiResource("grupo", ControllerGrupo::class);
+});
 
 //Rutas de Nota.
 
@@ -68,7 +73,7 @@ Route::middleware('auth:sanctum')->post('/notas', [ControllerNota::class, 'store
 //Esta ruta ejecuta la funcion de eliminar una Nota.
 Route::delete('/notas/{id}', [ControllerNota::class, 'destroy']);
 
-Route::middleware('auth:sanctum')->get('/notas/ver', [ControllerNota::class, 'verNotas']);
+Route::middleware('auth:sanctum')->get('/notas/ver', [ControllerNota::class, 'show']);
 
 
 //Rutas de Chat.

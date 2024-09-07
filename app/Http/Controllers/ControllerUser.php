@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
+use Illuminate\Support\Facades\Storage;
 
 class ControllerUser extends Controller
 {
@@ -36,12 +39,6 @@ class ControllerUser extends Controller
         return response()->json("Usuario creado", 200);
     }
 
-    //Esta funcion deberia mostrar los datos en el perfil, se debe probar.
-    public function show(Request $request)
-    {
-        $user = Auth::user();
-        return response()->json($request->user());
-    }
 
     //Esta funcion actualiza los datos del usuario, se debe probar.
     public function update(Request $request)
@@ -127,4 +124,47 @@ class ControllerUser extends Controller
         //Esto muestra un mensaje si la contraseña se cambio correctamente.
         return response()->json(['message' => 'Contraseña cambiada correctamente.']);
     }
+
+    public function show(Request $request)
+    {
+    $user = Auth::user();
+
+    if (!$user) {
+        return response()->json(['message' => 'User not authenticated'], 401);
+    }
+    $user = DB::table('users')
+                ->select('name', 'nickname', 'biografia', 'avatar')
+                ->where('id', $user->id)
+                ->get();
+
+    return response()->json($user);
+    }
+
+    public function updateAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,bmp|max:2048',
+        ]);
+
+        $user = Auth::user();
+
+
+        if ($user->avatar) {
+            Storage::delete($user->avatar);
+        }
+
+
+        $path = $request->file('avatar')->store('avatars');
+
+        // Actualizar la ruta del avatar en la base de datos
+        $user->avatar = $path;
+        $user->save();
+
+        return response()->json([
+            'message' => 'Avatar actualizado correctamente',
+            'avatar' => Storage::url($path) // Devolver la URL de la imagen
+        ], 200);
+    }
+
+
 }

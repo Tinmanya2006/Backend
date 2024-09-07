@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 
 class ControllerNota extends Controller
@@ -18,7 +20,7 @@ class ControllerNota extends Controller
         //Esto valida los datos que llegan del Frontend.
         $datosvalidados = $request->validate([
             'descripcion' => 'max:300',
-            'categoria' => 'required|max:45',
+            'categoria' => 'required|in:Trabajo,Estudios,Gimnasio,Dieta,Ocio,Viajes,Otro',
             'prioridad' => 'required|in:Baja,Media,Alta',
             'asignacion' => 'boolean',
         ]);
@@ -41,31 +43,25 @@ class ControllerNota extends Controller
     //Esta funcion elimina la nota, hay que probarla.
     public function destroy(Request $request, $id)
     {
-        //Esto busca la nota por su id para poder eliminarla.
-        $nota = Nota::find($id);
-
-        //Esto elimina la nota.
-         if ($nota) {
-
-        $nota->delete();
-
-        //Esto muestra dos mensajes, si se ha eliminado la nota y si no se elimino.
-        return response()->json('Nota eliminada correctamente', 204);
-     }  else {
-        return response()->json('No se eliminó la Nota', 406);
-     }
-    }
-
-    public function verNotas()
-    {
-        // Obtén el usuario autenticado
         $user = Auth::user();
 
-        // Obtén las notas del usuario
-        $nota = $user->nota;  // Asumiendo que tienes una relación "notas" en tu modelo User
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
 
-        // Retorna las notas en formato JSON
-        return response()->json($nota, 200);
+        //Esto elimina la nota.
+        $notas = DB::table('notas')
+                ->where('id', $id)
+                ->where('idusuario', $user->id)
+                ->delete();
+
+
+        if ($nota) {
+            return response()->json(['message' => 'Nota eliminada correctamente'], 200);
+        } else {
+        return response()->json(['message' => 'Nota no encontrada o no perteneciente al usuario'], 404);
+        }
+
     }
 
     public function show(Request $request)
@@ -75,12 +71,11 @@ class ControllerNota extends Controller
     if (!$user) {
         return response()->json(['message' => 'User not authenticated'], 401);
     }
+    $notas = DB::table('notas')
+                ->select('descripcion', 'categoria', 'prioridad', 'asignacion')
+                ->where('idusuario', $user->id)
+                ->get();
 
-    $nota = $user->nota;
-
-    return response()->json(['messaje' => 'Se han encontrado las notas']);
-    {
-    return response()->json(['messaje' => 'No se ha podido encontrar las notas'], 404);
+    return response()->json($notas);
     }
-}
 }
