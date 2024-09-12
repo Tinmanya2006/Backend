@@ -17,6 +17,7 @@ class Nota extends Model
         'prioridad',
         'asignacion',
         'idusuario',
+        'idgrupo',
     ];
 
     public function user()

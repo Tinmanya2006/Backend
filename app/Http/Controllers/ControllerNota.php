@@ -78,4 +78,19 @@ class ControllerNota extends Controller
 
     return response()->json($notas);
     }
+
+    public function showgrupo(Request $request)
+    {
+    $user = Auth::user();
+
+    if (!$user) {
+        return response()->json(['message' => 'User not authenticated'], 401);
+    }
+    $notas = DB::table('notas')
+                ->select('descripcion', 'categoria', 'prioridad', 'asignacion')
+                ->where('idgrupo', $grupo->id)
+                ->get();
+
+    return response()->json($notas);
+    }
 }

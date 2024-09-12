@@ -44,7 +44,7 @@ class ControllerUser extends Controller
     public function update(Request $request)
     {
         //Esto busca al usuario por su id para poder actualizar sus datos.
-        $user = Auth::user();
+        $user = $request->user();
 
         if (!$user) {
             return response()->json(['mensaje' => 'Usuario no autenticado'], 401);
@@ -106,7 +106,7 @@ class ControllerUser extends Controller
 
 
         //Esto autentica al usuario que se utiliza.
-        $user = Auth::user();
+        $user = $request->user();
 
         //Esto chequea si la contraseña actual es correcta.
         if (!Hash::check($datosValidados['password'], $user->password)) {
@@ -146,7 +146,8 @@ class ControllerUser extends Controller
             'avatar' => 'required|image|mimes:jpeg,png,jpg,bmp|max:2048',
         ]);
 
-        $user = Auth::user();
+        $user = $request->user();//Auth::user();
+
 
 
         if ($user->avatar) {
