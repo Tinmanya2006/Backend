@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -47,8 +48,9 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function notas()
+    public function notas(): HasMany
     {
-        return $this->hasMany(Nota::class);
+        return $this->hasMany(Nota::class, 'idusuario');
     }
+
 }

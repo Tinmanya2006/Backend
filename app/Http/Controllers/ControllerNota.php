@@ -42,29 +42,22 @@ class ControllerNota extends Controller
 
     //Esta funcion elimina la nota, hay que probarla.
     public function destroy(Request $request, $id)
-    {
-        $user = Auth::user();
-
-        $nota = $user->notas;
-
-        if (!$user) {
-            return response()->json(['message' => 'User not authenticated'], 401);
-        }
-
-        //Esto elimina la nota.
-        $notas = DB::table('notas')
-                ->where('id', $id)
-                ->where('idusuario', $user->id)
-                ->delete();
-
-
-        if ($nota) {
-            return response()->json(['message' => 'Nota eliminada correctamente'], 200);
-        } else {
-        return response()->json(['message' => 'Nota no encontrada o no perteneciente al usuario'], 404);
-        }
-
+{
+    $user = $request->user();//Auth::user();  // Obtenemos el usuario autenticado
+    if (!$user) {
+        return response()->json(['message' => 'Usuario no autenticado'], 401);
     }
+
+    // Verificamos si el usuario tiene una nota con ese ID
+    $nota = $user->notas()->find($id);
+    if (!$nota) {
+        return response()->json(['message' => 'Nota no encontrada o no perteneciente al usuario'], 404);
+    }
+
+    // Eliminamos la nota si existe
+    $nota->delete();
+    return response()->json(['message' => 'Nota eliminada correctamente'], 200);
+}
 
     public function show(Request $request)
     {
@@ -74,7 +67,7 @@ class ControllerNota extends Controller
         return response()->json(['message' => 'User not authenticated'], 401);
     }
     $notas = DB::table('notas')
-                ->select('descripcion', 'categoria', 'prioridad', 'asignacion')
+                ->select('descripcion', 'categoria', 'prioridad', 'asignacion', 'id')
                 ->where('idusuario', $user->id)
                 ->get();
 

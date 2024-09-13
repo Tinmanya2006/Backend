@@ -18,10 +18,12 @@ class Nota extends Model
         'asignacion',
         'idusuario',
         'idgrupo',
+        'id',
     ];
 
-    public function user()
+
+    public function users()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'idusuario');
     }
 }

@@ -71,7 +71,7 @@ Route::group([ 'namespace' => 'App\Http\Controllers'], function () {
 Route::middleware('auth:sanctum')->post('/notas', [ControllerNota::class, 'store']);
 
 //Esta ruta ejecuta la funcion de eliminar una Nota.
-Route::delete('/notas/{id}', [ControllerNota::class, 'destroy']);
+Route::middleware('auth:sanctum')->delete('/notas/{id}', [ControllerNota::class, 'destroy']);
 
 Route::middleware('auth:sanctum')->get('/notas/ver', [ControllerNota::class, 'show']);
 
