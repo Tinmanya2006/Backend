@@ -45,6 +45,8 @@ class ControllerNota extends Controller
     {
         $user = Auth::user();
 
+        $nota = $user->notas;
+
         if (!$user) {
             return response()->json(['message' => 'User not authenticated'], 401);
         }
@@ -82,6 +84,8 @@ class ControllerNota extends Controller
     public function showgrupo(Request $request)
     {
     $user = Auth::user();
+
+        $grupo = $user->grupos;
 
     if (!$user) {
         return response()->json(['message' => 'User not authenticated'], 401);

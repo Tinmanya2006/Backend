@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Genera;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\User;
 
 class ControllerGenera extends Controller
 {
