@@ -75,6 +75,13 @@ Route::middleware('auth:sanctum')->delete('/notas/{id}', [ControllerNota::class,
 
 Route::middleware('auth:sanctum')->get('/notas/ver', [ControllerNota::class, 'show']);
 
+Route::middleware('auth:sanctum')->put('/notas/{id}/completar', [ControllerNota::class, 'update']);
+Route::put("/notas/{id}/completa",
+function(){
+    echo("hola UwU");
+});
+
+Route::middleware('auth:sanctum')->get('/notas/vercompletadas', [ControllerNota::class, 'showcompletadas']);
 
 //Rutas de Chat.
 

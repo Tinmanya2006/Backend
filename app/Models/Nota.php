@@ -19,6 +19,8 @@ class Nota extends Model
         'idusuario',
         'idgrupo',
         'id',
+        'estado',
+        'finalizacion',
     ];
 
 

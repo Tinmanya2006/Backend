@@ -19,6 +19,7 @@ return new class extends Migration
             $table->enum('categoria', ['Trabajo', 'Estudios', 'Gimnasio', 'Dieta', 'Ocio', 'Viajes', 'Otro']);
             $table->enum('prioridad', ['Baja', 'Media', 'Alta']);
             $table->boolean('asignacion')->default(false);
+            $table->enum('estado', ['Pendiente', 'Completada'])->default('Pendiente');
             $table->unsignedBigInteger('idusuario')->notnullable();
 
             $table->foreign('idusuario')->references('id')->on('users');
