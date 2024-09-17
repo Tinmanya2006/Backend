@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Carbon\Carbon;
+use App\Models\Grupo;
 
 
 class ControllerNota extends Controller
@@ -73,7 +74,7 @@ class ControllerNota extends Controller
             //y a su vez muestra si los mismos no se pudieron actualizar.
             return response()->json(['messaje' => 'Se ha actualizado el estado de la nota']);
         } else {
-            return response()->json(['messaje' => 'No se pudieron actualizar los datos del usuario'], 404);
+            return response()->json(['messaje' => 'No se ha podido actualizar el estado de la nota'], 404);
         }
     }
 
@@ -106,26 +107,31 @@ class ControllerNota extends Controller
     $notas = DB::table('notas')
                 ->select('descripcion', 'categoria', 'prioridad', 'asignacion', 'id')
                 ->where('idusuario', $user->id)
+                ->where('estado', 'Pendiente')
+                ->whereNull('idgrupo')
                 ->get();
 
     return response()->json($notas);
     }
 
-    public function showgrupo(Request $request)
+    public function shownotagrupo(Request $request, $id)
     {
-    $user = Auth::user();
+        $user = Auth::user();
 
-        $grupo = $user->grupos;
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
 
-    if (!$user) {
-        return response()->json(['message' => 'User not authenticated'], 401);
+    if (!$id) {
+        return response()->json(['message' => 'La id del grupo es requerida'], 400);
     }
-    $notas = DB::table('notas')
-                ->select('descripcion', 'categoria', 'prioridad', 'asignacion')
-                ->where('idgrupo', $grupo->id)
-                ->get();
 
-    return response()->json($notas);
+        $notas = DB::table('notas')
+                    ->select('descripcion', 'categoria', 'prioridad', 'asignacion', 'id')
+                    ->where('idgrupo', '=', $id) // Solo notas que pertenecen a un grupo
+                    ->get();
+
+        return response()->json($notas);
     }
 
     public function showcompletadas(Request $request)
@@ -144,5 +150,34 @@ class ControllerNota extends Controller
                 ->get();
 
     return response()->json($notas);
+    }
+
+    public function notagrupo(Request $request, $id)
+    {
+
+        //Esto valida los datos que llegan del Frontend.
+        $datosvalidados = $request->validate([
+            'descripcion' => 'max:300',
+            'prioridad' => 'required|in:Baja,Media,Alta',
+            'asignacion' => 'boolean',
+        ]);
+
+        if (!auth()->check()) {
+            return response()->json(['message' => 'Usuario no autenticado'], 401);
+        }
+
+        if (!$id) {
+            return response()->json(['message' => 'El usuario no pertenece a un grupo válido'], 400);
+        }
+
+        $datosvalidados['idgrupo'] = $id;
+        //Esto crea una nota si los datos se validaron correctamente.
+        $nota = Nota::create($datosvalidados);
+
+        return response()->json([
+            'messaje' => 'La nota ha sido creada correctamente',
+            'nota' => $nota
+        ]);
+
     }
 }

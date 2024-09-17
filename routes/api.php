@@ -53,17 +53,19 @@ Route::middleware('auth:sanctum')->post('/users/avatar', [ControllerUser::class,
 //Rutas de Grupo.
 
 //Esta ruta ejecuta la funcion de crear un Grupo.
-Route::post('/grupos', [ControllerGrupo::class, 'store']);
+Route::middleware('auth:sanctum')->post('/grupos', [ControllerGrupo::class, 'store']);
 
 //Esta ruta ejecuta la funcion de actualizar los datos de un Grupo.
-Route::put('/grupos/{id}', [ControllerGrupo::class, 'update']);
+Route::put('/grupos/{id}/actualizar', [ControllerGrupo::class, 'update']);
 
 //Esta ruta ejecuta la funcion de eliminar un grupo.
 Route::delete('/grupos/{id}', [ControllerGrupo::class, 'destroy']);
 
-Route::group([ 'namespace' => 'App\Http\Controllers'], function () {
-    Route::apiResource("grupo", ControllerGrupo::class);
-});
+Route::middleware('auth:sanctum')->get('/grupos/ver', [ControllerGrupo::class, 'show']);
+
+Route::middleware('auth:sanctum')->get('/grupos/datos', [ControllerGrupo::class, 'datos']);
+
+Route::middleware('auth:sanctum')->get('/grupos/{id}/preferencias', [ControllerGrupo::class, 'datosGrupo']);
 
 //Rutas de Nota.
 
@@ -76,12 +78,14 @@ Route::middleware('auth:sanctum')->delete('/notas/{id}', [ControllerNota::class,
 Route::middleware('auth:sanctum')->get('/notas/ver', [ControllerNota::class, 'show']);
 
 Route::middleware('auth:sanctum')->put('/notas/{id}/completar', [ControllerNota::class, 'update']);
-Route::put("/notas/{id}/completa",
-function(){
-    echo("hola UwU");
-});
+
+Route::middleware('auth:sanctum')->post('/notas/{id}/grupo', [ControllerNota::class, 'notagrupo']);
 
 Route::middleware('auth:sanctum')->get('/notas/vercompletadas', [ControllerNota::class, 'showcompletadas']);
+
+Route::middleware('auth:sanctum')->get('/notas/shownotagrupo/{id}', [ControllerNota::class, 'shownotagrupo']);
+
+
 
 //Rutas de Chat.
 

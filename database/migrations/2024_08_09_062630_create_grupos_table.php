@@ -15,9 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('nombre',45);
             $table->enum('admin', ['usuario', 'administrador'])->default('administrador');
-            $table->string('nickname',20)->default('');
             $table->string('descripcion',200);
             $table->timestamps();
+            $table->unsignedBigInteger('idusuario')->notnullable();
+
+            $table->foreign('idusuario')->references('id')->on('users');
         });
     }
 

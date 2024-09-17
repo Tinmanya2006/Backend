@@ -28,4 +28,9 @@ class Nota extends Model
     {
         return $this->belongsTo(User::class, 'idusuario');
     }
+
+    public function grupo()
+    {
+        return $this->belongsTo(Grupo::class);
+    }
 }

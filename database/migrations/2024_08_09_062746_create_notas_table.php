@@ -20,8 +20,10 @@ return new class extends Migration
             $table->enum('prioridad', ['Baja', 'Media', 'Alta']);
             $table->boolean('asignacion')->default(false);
             $table->enum('estado', ['Pendiente', 'Completada'])->default('Pendiente');
-            $table->unsignedBigInteger('idusuario')->notnullable();
+            $table->unsignedBigInteger('idusuario')->nullable();
+            $table->unsignedBigInteger('idgrupo')->nullable();
 
+            $table->foreign('idgrupo')->references('id')->on('grupos');
             $table->foreign('idusuario')->references('id')->on('users');
         });
     }

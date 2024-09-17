@@ -14,8 +14,13 @@ class Grupo extends Model
     protected $fillable = [
         'nombre',
         'admin',
-        'nickname',
         'descripcion',
+        'idusuario',
     ];
+
+    public function notas()
+    {
+        return $this->hasMany(Nota::class);
+    }
 
 }
