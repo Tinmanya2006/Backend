@@ -53,6 +53,7 @@ class ControllerUser extends Controller
         //Esto valida los datos que llegan del Frontend.
         $datosValidados = $request->validate(
             [
+                'name' => 'sometimes|max:30',
                 'nickname' => 'sometimes|unique:users|max:20',
                 'biografia' => 'sometimes|max:120',
             ]
@@ -61,6 +62,7 @@ class ControllerUser extends Controller
         //Esto actualiza los datos del usuario, si los datos se validaron correctamente.
         if ($user) {
             $user->update([
+                'name' => $datosValidados['name'] ?? $user->name,
                 'nickname' => $datosValidados['nickname'] ?? $user->nickname,
                 'biografia' => $datosValidados['biografia'] ?? $user->biografia,
             ]);
