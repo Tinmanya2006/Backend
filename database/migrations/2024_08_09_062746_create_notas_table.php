@@ -16,9 +16,9 @@ return new class extends Migration
             $table->timestamps();
             $table->timestamp('finalizacion')->nullable();
             $table->string('descripcion',300);
-            $table->enum('categoria', ['Trabajo', 'Estudios', 'Gimnasio', 'Dieta', 'Ocio', 'Viajes', 'Otro']);
+            $table->enum('categoria', ['Trabajo', 'Estudios', 'Gimnasio', 'Dieta', 'Ocio', 'Viajes', 'Otro'])->nullable();
             $table->enum('prioridad', ['Baja', 'Media', 'Alta']);
-            $table->boolean('asignacion')->default(false);
+            $table->integer('asignacion')->nullable();
             $table->enum('estado', ['Pendiente', 'Completada'])->default('Pendiente');
             $table->unsignedBigInteger('idusuario')->nullable();
             $table->unsignedBigInteger('idgrupo')->nullable();

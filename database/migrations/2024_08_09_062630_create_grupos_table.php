@@ -17,6 +17,7 @@ return new class extends Migration
             $table->enum('admin', ['usuario', 'administrador'])->default('administrador');
             $table->string('descripcion',200);
             $table->timestamps();
+            $table->string('logo')->nullable();
             $table->unsignedBigInteger('idusuario')->notnullable();
 
             $table->foreign('idusuario')->references('id')->on('users');

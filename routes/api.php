@@ -63,9 +63,13 @@ Route::delete('/grupos/{id}', [ControllerGrupo::class, 'destroy']);
 
 Route::middleware('auth:sanctum')->get('/grupos/ver', [ControllerGrupo::class, 'show']);
 
-Route::middleware('auth:sanctum')->get('/grupos/datos', [ControllerGrupo::class, 'datos']);
+Route::middleware('auth:sanctum')->get('/grupos/datos', [ControllerGrupo::class, 'datosUsuario']);
 
 Route::middleware('auth:sanctum')->get('/grupos/{id}/preferencias', [ControllerGrupo::class, 'datosGrupo']);
+
+Route::middleware('auth:sanctum')->get('/grupos/{id}/showmiembros', [ControllerGrupo::class, 'showmiembros']);
+
+Route::middleware('auth:sanctum')->post('/grupos/logo', [ControllerGrupo::class, 'updateLogo']);
 
 //Rutas de Nota.
 
@@ -84,6 +88,8 @@ Route::middleware('auth:sanctum')->post('/notas/{id}/grupo', [ControllerNota::cl
 Route::middleware('auth:sanctum')->get('/notas/vercompletadas', [ControllerNota::class, 'showcompletadas']);
 
 Route::middleware('auth:sanctum')->get('/notas/shownotagrupo/{id}', [ControllerNota::class, 'shownotagrupo']);
+
+Route::middleware('auth:sanctum')->get('/notas/shownotagrupocompletadas/{id}', [ControllerNota::class, 'shownotagrupocompletadas']);
 
 Route::middleware('auth:sanctum')->delete('/notas/{id}/{idgrupo}/eliminarnotagrupo', [ControllerNota::class, 'destroygrupo']);
 

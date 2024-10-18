@@ -40,6 +40,8 @@ class ControllerNota extends Controller
             'nota' => $nota
         ]);
 
+        return response()->json(['message' => 'Hubo un error al creaer la nota']);
+
     }
 
     public function update(Request $request, $id)
@@ -196,7 +198,7 @@ class ControllerNota extends Controller
     }
 
         $notas = DB::table('notas')
-                    ->select('descripcion', 'categoria', 'prioridad', 'asignacion', 'id')
+                    ->select('descripcion', 'prioridad', 'asignacion', 'id', 'estado')
                     ->where('idgrupo', '=', $id) // Solo notas que pertenecen a un grupo
                     ->where('estado',  'Pendiente')
                     ->get();
@@ -229,7 +231,7 @@ class ControllerNota extends Controller
         $datosvalidados = $request->validate([
             'descripcion' => 'max:300',
             'prioridad' => 'required|in:Baja,Media,Alta',
-            'asignacion' => 'boolean',
+            'asignacion' => 'required|integer',
         ]);
 
         if (!auth()->check()) {
@@ -249,5 +251,26 @@ class ControllerNota extends Controller
             'nota' => $nota
         ]);
 
+    }
+
+    public function shownotagrupocompletadas(Request $request, $id)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
+
+    if (!$id) {
+        return response()->json(['message' => 'La id del grupo es requerida'], 400);
+    }
+
+        $notas = DB::table('notas')
+                    ->select('descripcion', 'prioridad', 'asignacion', 'id', 'estado')
+                    ->where('idgrupo', '=', $id) // Solo notas que pertenecen a un grupo
+                    ->where('estado',  'Completada')
+                    ->get();
+
+        return response()->json($notas);
     }
 }

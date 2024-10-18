@@ -137,37 +137,43 @@ class ControllerUser extends Controller
     $user = DB::table('users')
                 ->select('name', 'nickname', 'biografia', 'avatar')
                 ->where('id', $user->id)
-                ->get();
+                ->first();
 
-    return response()->json($user);
+    if (!$user) {
+     return response()->json(['message' => 'User not found'], 404);
+          }
+
+          $user->avatar = $user->avatar
+            ? url('storage/' . $user->avatar)
+            : url('/storage/images/user.png');
+
+
+                return response()->json($user);
     }
 
     public function updateAvatar(Request $request)
     {
-        $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png,jpg,bmp|max:2048',
-        ]);
+        $user = Auth::user();
+        $user = $request->user();
 
-        $user = $request->user();//Auth::user();
-
-
-
-        if ($user->avatar) {
-            Storage::delete($user->avatar);
-        }
-
-
-        $path = $request->file('avatar')->store('avatars');
-
-        // Actualizar la ruta del avatar en la base de datos
-        $user->avatar = $path;
-        $user->save();
-
-        return response()->json([
-            'message' => 'Avatar actualizado correctamente',
-            'avatar' => Storage::url($path) // Devolver la URL de la imagen
-        ], 200);
+    if (!$user) {
+        return response()->json(['message' => 'User not authenticated'], 401);
     }
 
+    if ($request->hasFile('avatar')) {
+        $file = $request->file('avatar');
+        $path = $file->store('images', 'public'); // Guarda en 'storage/app/public/images'
 
+        // Actualiza la ruta del avatar en la base de datos
+        // Aquí utilizamos $user, que ya es una instancia de User
+        $user->avatar = $path;
+
+        // Guardamos los cambios en la base de datos
+        $user->save(); // Ahora esto debería funcionar correctamente
+
+        return response()->json(['message' => 'Avatar updated successfully']);
+    }
+
+    return response()->json(['message' => 'No avatar uploaded'], 400);
+    }
 }

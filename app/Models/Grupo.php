@@ -16,6 +16,7 @@ class Grupo extends Model
         'admin',
         'descripcion',
         'idusuario',
+        'logo',
     ];
 
     public function notas()
