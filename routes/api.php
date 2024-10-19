@@ -67,9 +67,11 @@ Route::middleware('auth:sanctum')->get('/grupos/datos', [ControllerGrupo::class,
 
 Route::middleware('auth:sanctum')->get('/grupos/{id}/preferencias', [ControllerGrupo::class, 'datosGrupo']);
 
+Route::middleware('auth:sanctum')->get('/grupos/{id}/showmiembrosnotas', [ControllerGrupo::class, 'showmiembrosnotas']);
+
 Route::middleware('auth:sanctum')->get('/grupos/{id}/showmiembros', [ControllerGrupo::class, 'showmiembros']);
 
-Route::middleware('auth:sanctum')->post('/grupos/logo', [ControllerGrupo::class, 'updateLogo']);
+Route::middleware('auth:sanctum')->post('/grupos/{id}/logo', [ControllerGrupo::class, 'updateLogo']);
 
 //Rutas de Nota.
 

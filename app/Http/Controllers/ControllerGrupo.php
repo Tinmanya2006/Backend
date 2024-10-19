@@ -102,7 +102,7 @@ class ControllerGrupo extends Controller
                 // Generar la URL completa para el logo
                 $grupo->logo = $grupo->logo
                 ? url('storage/' . $grupo->logo)
-                : url('/storage/images/halcyon.png');
+                : url('/storage/images/logo.png');
                 return $grupo;
             });
 
@@ -137,20 +137,33 @@ class ControllerGrupo extends Controller
     public function datosGrupo(Request $request, $id){
         $user = Auth::user();
 
-    if (!$user) {
-        return response()->json(['message' => 'User not authenticated'], 401);
-    }
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
 
-    if (!$id) {
-        return response()->json(['message' => 'La id del grupo es requerida'], 400);
-    }
+        // Verifica si se recibió la ID del grupo
+        if (!$id) {
+            return response()->json(['message' => 'La id del grupo es requerida'], 400);
+        }
 
+        // Obtén el grupo específico del usuario según la ID proporcionada
         $grupo = DB::table('grupos')
-                    ->select('nombre', 'descripcion', 'created_at')
-                    ->where('id', '=', $id)
-                    ->get();
+            ->select('nombre', 'descripcion', 'created_at', 'logo')
+            ->where('idusuario', $user->id)
+            ->where('id', $id) // Filtra por la ID del grupo
+            ->first(); // Obtén solo un grupo
 
-        return response()->json($grupo);
+        // Verifica si se encontró el grupo
+        if (!$grupo) {
+            return response()->json(['message' => 'Grupo no encontrado'], 404);
+        }
+
+        // Generar la URL completa para el logo
+        $grupo->logo = $grupo->logo
+            ? url('storage/' . $grupo->logo)
+            : url('/storage/images/logo.png');
+
+        return response()->json($grupo); // Devuelve el grupo encontrado
     }
 
 
@@ -180,21 +193,15 @@ class ControllerGrupo extends Controller
         return response()->json($grupos);
     }
 
-    public function updateLogo(Request $request) {
+    public function updateLogo(Request $request, $id) {
         $user = Auth::user();
 
         if (!$user) {
             return response()->json(['message' => 'User not authenticated'], 401);
         }
 
-        // Verifica que se haya proporcionado el ID del grupo
-        $grupoId = $request->input('grupo');
-        if (!$grupoId) {
-            return response()->json(['message' => 'Group ID is required'], 400);
-        }
-
         // Encuentra el grupo al que pertenece el usuario
-        $grupo = Grupo::find($grupoId);
+        $grupo = Grupo::find($id);
         if (!$grupo) {
             return response()->json(['message' => 'Group not found'], 404);
         }
@@ -212,6 +219,26 @@ class ControllerGrupo extends Controller
         }
 
         return response()->json(['message' => 'No logo uploaded'], 400);
+    }
+
+    public function showmiembrosnotas(Request $request, $id) {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
+
+        if (!$id) {
+            return response()->json(['message' => 'La id del grupo es requerida'], 400);
+        }
+
+        $grupos = DB::table('grupos')
+                    ->join('users', 'grupos.idusuario', '=', 'users.id')
+                    ->where('grupos.id', $id)
+                    ->select('users.id as idusuario', 'users.nickname')
+                    ->get();
+
+        return response()->json($grupos);
     }
 }
 
