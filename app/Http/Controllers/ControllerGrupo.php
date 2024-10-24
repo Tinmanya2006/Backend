@@ -19,16 +19,17 @@ class ControllerGrupo extends Controller
         }
 
         // Validar los datos
-        $validatedData = $request->validate([
+        $datosValidados = $request->validate([
             'nombre' => 'required|string|max:45',
             'descripcion' => 'required|string|max:200',
-            'logo' => 'nullable|image|max:2048', // Validación para el archivo de imagen
+            'logo' => 'nullable|image|max:2048',
+            'miembros' => 'array',
         ]);
 
         // Crear el grupo
         $grupo = new Grupo();
-        $grupo->nombre = $validatedData['nombre'];
-        $grupo->descripcion = $validatedData['descripcion'];
+        $grupo->nombre = $datosValidados['nombre'];
+        $grupo->descripcion = $datosValidados   ['descripcion'];
         $grupo->idusuario = $user->id; // Asignar el ID del usuario autenticado
 
         // Verificar si se subió un logo y guardarlo
@@ -37,6 +38,15 @@ class ControllerGrupo extends Controller
             $path = $file->store('images', 'public'); // Guardar en 'storage/app/public/images'
             $grupo->logo = $path;
         }
+
+
+        // Añadir el creador del grupo a la lista de miembros
+        $miembros = $request->input('miembros', []); // Obtener miembros del request
+        $miembros[] = $user->id; // Agregar el ID del creador a los miembros
+
+        // Almacenar miembros como JSON
+        $grupo->miembros = json_encode(array_unique($miembros)); // Convertir a JSON, asegurando que no haya duplicados
+
 
         // Guardar el grupo en la base de datos
         $grupo->save();
@@ -96,7 +106,11 @@ class ControllerGrupo extends Controller
 
         $grupos = DB::table('grupos')
             ->select('nombre', 'id', 'logo')
-            ->where('idusuario', $user->id)
+            ->where(function($query) use ($user) {
+                // Grupos creados por el usuario
+                $query->where('idusuario', $user->id)
+                      ->orWhere('miembros', 'LIKE', '%'.$user->id.'%'); // Grupos donde el usuario es miembro
+            })
             ->get()
             ->map(function ($grupo) {
                 // Generar la URL completa para el logo
@@ -149,8 +163,12 @@ class ControllerGrupo extends Controller
         // Obtén el grupo específico del usuario según la ID proporcionada
         $grupo = DB::table('grupos')
             ->select('nombre', 'descripcion', 'created_at', 'logo')
-            ->where('idusuario', $user->id)
-            ->where('id', $id) // Filtra por la ID del grupo
+            ->where(function($query) use ($user, $id) {
+                // Grupos creados por el usuario o a los que el usuario es miembro
+                $query->where('idusuario', $user->id)
+                      ->orWhere('miembros', 'LIKE', '%'.$user->id.'%'); // Verifica si el ID del usuario está en el campo 'miembros'
+            })
+            ->where('id', $id)
             ->first(); // Obtén solo un grupo
 
         // Verifica si se encontró el grupo
@@ -178,19 +196,37 @@ class ControllerGrupo extends Controller
     if (!$id) {
         return response()->json(['message' => 'La id del grupo es requerida'], 400);
     }
-        $grupos = DB::table('grupos')
-                    ->join('users', 'grupos.idusuario', '=', 'users.id')
-                    ->where('grupos.id', $id)
-                    ->select('users.id as idusuario', 'users.nickname', 'users.avatar')
-                    ->get();
 
-                    $user->avatar = $user->avatar
-            ? url('storage/' . $user->avatar)
+            // Obtén los miembros del grupo
+    $grupo = DB::table('grupos')->select('miembros')->where('id', $id)->first();
+
+    if ($grupo) {
+        // Decodifica el JSON a un array
+        $miembrosArray = json_decode($grupo->miembros, true); // Asegúrate de que este campo sea un JSON válido
+
+        // Asegúrate de que sea un array
+        if (!is_array($miembrosArray)) {
+            $miembrosArray = [];
+        }
+
+        // Obtén los miembros usando el array
+        $miembros = DB::table('users')
+            ->whereIn('id', $miembrosArray)
+            ->select('id as idusuario', 'nickname', 'avatar')
+            ->get();
+    } else {
+        $miembros = []; // Si no hay grupo, asigna un array vacío
+    }
+
+    // Procesar los avatares de los miembros
+    foreach ($miembros as $miembro) {
+        $miembro->avatar = $miembro->avatar
+            ? url('storage/' . $miembro->avatar)
             : url('/storage/images/user.png');
+    }
 
-        return response()->json($user);
-
-        return response()->json($grupos);
+    // Devuelve solo los miembros
+    return response()->json($miembros);
     }
 
     public function updateLogo(Request $request, $id) {

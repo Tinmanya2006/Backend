@@ -7,6 +7,8 @@ use App\Http\Controllers\ControllerGrupo;
 use App\Http\Controllers\ControllerNota;
 use App\Http\Controllers\ControllerChat;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\ControllerNotificacion;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -102,3 +104,12 @@ Route::middleware('auth:sanctum')->put('/notas/{id}/{idgrupo}/completarnotagrupo
 
 //Esta ruta ejecuta la funcion de crear un Chat.
 Route::post('/chats', [ControllerChat::class, 'store']);
+
+
+//Rutas de Notificaciones.
+
+Route::middleware('auth:sanctum')->post('/notificacion/{id}/enviar', [ControllerNotificacion::class, 'enviarInvitacionGrupo']);
+
+Route::middleware('auth:sanctum')->post('/notificacion/{id}/responder', [ControllerNotificacion::class, 'responderInvitacion']);
+
+Route::middleware('auth:sanctum')->get('/notificacion/ver', [ControllerNotificacion::class, 'show']);

@@ -11,16 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('grupos', function (Blueprint $table) {
+        Schema::create('notificacions', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre',45);
-            $table->enum('admin', ['usuario', 'administrador'])->default('administrador');
-            $table->string('descripcion',200);
+            $table->string('titulo');
+            $table->string('mensaje');
+            $table->enum('estado', ['Pendiente', 'Aceptada', 'Rechazada'])->default('Pendiente');
             $table->timestamps();
-            $table->string('logo')->nullable();
-            $table->unsignedBigInteger('idusuario')->notnullable();
-            $table->json('miembros')->nullable();
+            $table->unsignedBigInteger('idusuario')->constrained();
+            $table->unsignedBigInteger('idgrupo')->constrained();
 
+            $table->foreign('idgrupo')->references('id')->on('grupos');
             $table->foreign('idusuario')->references('id')->on('users');
         });
     }
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('grupos');
+        Schema::dropIfExists('notificacions');
     }
 };
