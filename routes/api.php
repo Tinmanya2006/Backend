@@ -75,6 +75,18 @@ Route::middleware('auth:sanctum')->get('/grupos/{id}/showmiembros', [ControllerG
 
 Route::middleware('auth:sanctum')->post('/grupos/{id}/logo', [ControllerGrupo::class, 'updateLogo']);
 
+Route::middleware('auth:sanctum')->delete('/grupos/{id}/miembros/{idmiembro}', [ControllerGrupo::class, 'eliminarMiembro']);
+
+Route::middleware('auth:sanctum')->delete('/grupos/{id}/abandonar', [ControllerGrupo::class, 'abandonarGrupo']);
+
+Route::middleware('auth:sanctum')->put('/grupos/{id}/miembros/{nuevoAdminId}/asignarAdminYAbandonar', [ControllerGrupo::class, 'asignarAdminYAbandonar']);
+
+Route::middleware('auth:sanctum')->get('/grupos/{id}/verificaradmin', [ControllerGrupo::class, 'verificarAdmin']);
+
+Route::middleware('auth:sanctum')->get('/grupos/{id}/admin', [ControllerGrupo::class, 'showAdmin']);
+
+Route::middleware('auth:sanctum')->put('/grupos/{id}/miembros/{nuevoAdminId}/asignarAdmin', [ControllerGrupo::class, 'asignarAdmin']);
+
 //Rutas de Nota.
 
 //Esta ruta ejecuta la funcion de Crear una Nota.

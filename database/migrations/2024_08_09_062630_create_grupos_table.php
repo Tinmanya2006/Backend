@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('grupos', function (Blueprint $table) {
             $table->id();
             $table->string('nombre',45);
-            $table->enum('admin', ['usuario', 'administrador'])->default('administrador');
+            $table->unsignedBigInteger('admin')->nullable(); // Almacenará el ID del administrador
             $table->string('descripcion',200);
             $table->timestamps();
             $table->string('logo')->nullable();

@@ -29,6 +29,11 @@ class Grupo extends Model
         return $this->hasMany(Nota::class);
     }
 
+    public function miembros()
+    {
+    return $this->belongsToMany(User::class);
+    }
+
     public function agregarMiembro($idusuario)
     {
         // Obtener los miembros actuales
