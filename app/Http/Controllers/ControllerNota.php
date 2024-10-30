@@ -261,58 +261,59 @@ class ControllerNota extends Controller
 
 
     public function shownotagrupo(Request $request, $id)
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    if (!$user) {
-        return response()->json(['message' => 'User not authenticated'], 401);
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
+
+        if (!$id) {
+            return response()->json(['message' => 'La id del grupo es requerida'], 400);
+        }
+
+        // Obtener las notas para el grupo específico
+        $notas = DB::table('notas')
+                    ->select('descripcion', 'prioridad', 'asignacion', 'id', 'estado')
+                    ->where('idgrupo', '=', $id) // Solo notas que pertenecen a un grupo
+                    ->where('estado', 'Pendiente')
+                    ->get();
+
+        // Obtener los nicknames de los miembros asignados
+        $miembrosIds = $notas->pluck('asignacion')->unique()->toArray();
+
+        // Obtener miembros con sus avatares completos
+        $miembros = DB::table('users')
+            ->whereIn('nickname', $miembrosIds)
+            ->select('nickname', 'avatar')
+            ->get();
+
+        // Construir URL completa para los avatares o proporcionar un avatar por defecto
+        $miembros->map(function ($miembro) {
+            $miembro->avatar = $miembro->avatar
+                ? url('storage/' . $miembro->avatar)
+                : url('/storage/images/user.png');
+            return $miembro;
+        });
+
+        // Crear un mapa de nicknames a avatares
+        $avataresPorNickname = $miembros->pluck('avatar', 'nickname')->toArray();
+
+        // Mapear las notas para incluir el avatar correspondiente y permisos de edición solo para el miembro asignado
+        $notasConUsuario = $notas->map(function($nota) use ($avataresPorNickname, $user) {
+            return [
+                'id' => $nota->id,
+                'descripcion' => $nota->descripcion,
+                'prioridad' => $nota->prioridad,
+                'estado' => $nota->estado,
+                'asignacion' => $nota->asignacion,
+                'avatar' => $avataresPorNickname[$nota->asignacion] ?? url('/storage/images/user.png'), // URL del avatar
+                'editable' => $nota->asignacion === $user->nickname // Permitir edición solo si el usuario autenticado es el asignado
+            ];
+        });
+
+        return response()->json($notasConUsuario);
     }
-
-    if (!$id) {
-        return response()->json(['message' => 'La id del grupo es requerida'], 400);
-    }
-
-    // Obtener las notas para el grupo específico
-    $notas = DB::table('notas')
-                ->select('descripcion', 'prioridad', 'asignacion', 'id', 'estado')
-                ->where('idgrupo', '=', $id) // Solo notas que pertenecen a un grupo
-                ->where('estado',  'Pendiente')
-                ->get();
-
-    // Obtener los nicknames de los miembros asignados
-    $miembrosIds = $notas->pluck('asignacion')->unique()->toArray();
-
-    // Obtener miembros con sus avatares completos
-    $miembros = DB::table('users')
-        ->whereIn('nickname', $miembrosIds) // Aquí cambias 'id' por 'nickname'
-        ->select('nickname', 'avatar')
-        ->get();
-
-    // Construir URL completa para los avatares o proporcionar un avatar por defecto
-    $miembros->map(function ($miembro) {
-        $miembro->avatar = $miembro->avatar
-            ? url('storage/' . $miembro->avatar)
-            : url('/storage/images/user.png');
-        return $miembro;
-    });
-
-    // Crear un mapa de nicknames a avatares
-    $avataresPorNickname = $miembros->pluck('avatar', 'nickname')->toArray();
-
-    // Mapear las notas para incluir el avatar correspondiente
-    $notasConUsuario = $notas->map(function($nota) use ($avataresPorNickname) {
-        return [
-            'id' => $nota->id,
-            'descripcion' => $nota->descripcion,
-            'prioridad' => $nota->prioridad,
-            'estado' => $nota->estado,
-            'asignacion' => $nota->asignacion,
-            'avatar' => $avataresPorNickname[$nota->asignacion] ?? url('/storage/images/user.png'), // URL del avatar
-        ];
-    });
-
-    return response()->json($notasConUsuario);
-}
 
         //Terminación de Funcion de Mostrar Notas Pendientes.
 
