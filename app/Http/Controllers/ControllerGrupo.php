@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\Notificacion;
 
 class ControllerGrupo extends Controller
 {
@@ -83,6 +84,10 @@ class ControllerGrupo extends Controller
     }
     //Esta funcion elimina el grupo, hay que probarla.
     public function destroy(Request $request, $id){
+
+        $user = Auth::user();
+
+        Notificacion::where('idgrupo', $id)->delete();
 
         //Esto busca al grupo por su id para poder eliminarlo.
         $grupo = Grupo::find($id);
@@ -202,6 +207,16 @@ class ControllerGrupo extends Controller
             'descripcion' => $grupo->descripcion,
             // Otros datos del grupo
         ],
+        'esAdmin' => $grupo->admin === $user->id // true si el usuario es el administrador
+    ]);
+}
+
+public function cargarAdmin($id)
+{
+    $grupo = Grupo::findOrFail($id);
+    $user = auth()->user();
+
+    return response()->json([
         'esAdmin' => $grupo->admin === $user->id // true si el usuario es el administrador
     ]);
 }

@@ -61,7 +61,7 @@ Route::middleware('auth:sanctum')->post('/grupos', [ControllerGrupo::class, 'sto
 Route::put('/grupos/{id}/actualizar', [ControllerGrupo::class, 'update']);
 
 //Esta ruta ejecuta la funcion de eliminar un grupo.
-Route::delete('/grupos/{id}', [ControllerGrupo::class, 'destroy']);
+Route::middleware('auth:sanctum')->delete('/grupos/{id}', [ControllerGrupo::class, 'destroy']);
 
 Route::middleware('auth:sanctum')->get('/grupos/ver', [ControllerGrupo::class, 'show']);
 
@@ -84,6 +84,8 @@ Route::middleware('auth:sanctum')->put('/grupos/{id}/miembros/{nuevoAdminId}/asi
 Route::middleware('auth:sanctum')->get('/grupos/{id}/verificaradmin', [ControllerGrupo::class, 'verificarAdmin']);
 
 Route::middleware('auth:sanctum')->get('/grupos/{id}/admin', [ControllerGrupo::class, 'showAdmin']);
+
+Route::middleware('auth:sanctum')->get('/grupos/{id}/cargarAdmin', [ControllerGrupo::class, 'cargarAdmin']);
 
 Route::middleware('auth:sanctum')->put('/grupos/{id}/miembros/{nuevoAdminId}/asignarAdmin', [ControllerGrupo::class, 'asignarAdmin']);
 
