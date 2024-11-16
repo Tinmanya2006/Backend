@@ -16,24 +16,30 @@ class AuthenticatedSessionController extends Controller
      * Handle an incoming authentication request.
      */
 
+     //Esta funcion sirve para Iniciar Sesion
      public function login(Request $request)
     {
+        //Se validan los datos enviados del frontend
         $request->validate([
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
         ]);
 
+        //Se autentican los datos si son coinciden con alguno de la base de datos
         if (! Auth::attempt($request->only('email', 'password'))) {
             throw ValidationException::withMessages([
                 'email' => __('auth.failed'),
             ]);
         }
 
-        $user = $request->user();//Auth::user();
+        //Se autentica el usuario
+        $user = $request->user();
 
+        //Esto crea un token para un usuario
         $token = $user->createToken('auth-token')->plainTextToken;
 
-        return response()->json(['message' => 'Login successful', 'token' => $token, 'user'=>$user]);
+        //Se envia un mensaje a la consola
+        return response()->json(['message' => 'Ha iniciado sesion correctamente', 'token' => $token, 'user'=>$user]);
     }
 
 

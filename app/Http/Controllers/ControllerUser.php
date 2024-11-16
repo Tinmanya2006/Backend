@@ -33,19 +33,21 @@ class ControllerUser extends Controller
             'name' => $datosValidados['name'],
             'nickname' => $datosValidados['nickname'],
             'email' => $datosValidados['email'],
-            'password' => bcrypt($datosValidados['password']),
+            'password' => bcrypt($datosValidados['password']), //Se encripta la contraseña al guardarla
         ]);
 
+        //Se envia un mensaje a la consola
         return response()->json("Usuario creado", 200);
     }
 
 
-    //Esta funcion actualiza los datos del usuario, se debe probar.
+    //Esta funcion actualiza los datos del usuario.
     public function update(Request $request)
     {
         //Esto busca al usuario por su id para poder actualizar sus datos.
         $user = $request->user();
 
+        //Mensaje de error si el usuario no esta autenticado.
         if (!$user) {
             return response()->json(['mensaje' => 'Usuario no autenticado'], 401);
         }
@@ -75,7 +77,7 @@ class ControllerUser extends Controller
         }
     }
 
-    //Esta funcion elimina el usuario, se debe probar.
+    //Esta funcion elimina el usuario <- NO SE UTILIZA PORQUE NUNCA SE PENSO EN ELIMINAR A UN USUARIO
     public function destroy(Request $request, $id)
     {
         //Esto busca al usuario por su id para poder actualizar sus datos.
@@ -93,9 +95,10 @@ class ControllerUser extends Controller
      }
     }
 
-    //esta funcion sirve para cambiar la contraseña, se debe probar.
+    //esta funcion sirve para cambiar la contraseña.
     public function cambiarContraseña(Request $request)
     {
+        //Esto autentica al usuario, si el usuario no esta autenticado se envia un mensaje.
         if (!Auth::check()) {
             return response()->json(['message' => 'No estás autenticado.'], 401);
         }
@@ -110,14 +113,14 @@ class ControllerUser extends Controller
         //Esto autentica al usuario que se utiliza.
         $user = $request->user();
 
-        //Esto chequea si la contraseña actual es correcta.
+        //Esto chequea si la contraseña actual es correcta, si no se envia un mensaje de error.
         if (!Hash::check($datosValidados['password'], $user->password)) {
             throw ValidationException::withMessages([
                 'password' => ['La contraseña actual es incorrecta.'],
             ]);
         }
 
-        //Esto cambia la contraseña.
+        //Esto cambia la contraseña y la encripta.
         $user->password = Hash::make($datosValidados['newpassword']);
 
         //Esto guarda la contraseña.
@@ -127,53 +130,66 @@ class ControllerUser extends Controller
         return response()->json(['message' => 'Contraseña cambiada correctamente.']);
     }
 
+    //Esta funcion sirve para mostrar los datos del usuario autenticado.
     public function show(Request $request)
     {
-    $user = Auth::user();
+        //Se autentica el usuario
+        $user = Auth::user();
 
-    if (!$user) {
-        return response()->json(['message' => 'User not authenticated'], 401);
+        //Mensaje de error si el usuario no esta autenticado.
+        if (!$user) {
+            return response()->json(['message' => 'Usuario no autenticado'], 401);
+        }
+
+        //Se obtienen los datos del usuario autenticado de la base de datos.
+        $user = DB::table('users')
+                    ->select('name', 'nickname', 'biografia', 'avatar')
+                    ->where('id', $user->id)
+                    ->first();
+
+        //Si el usuario no se encuentra en la base de datos se envia un mensaje
+        if (!$user) {
+            return response()->json(['message' => 'Usuario no encontrado'], 404);
+        }
+
+        //Busca al avatar del usuario y si no tiene le pone uno por default
+        $user->avatar = $user->avatar
+        ? url('storage/' . $user->avatar)
+        : url('/storage/images/user.png');
+
+
+        //Se envia los datos a la consola
+        return response()->json($user);
     }
-    $user = DB::table('users')
-                ->select('name', 'nickname', 'biografia', 'avatar')
-                ->where('id', $user->id)
-                ->first();
 
-    if (!$user) {
-     return response()->json(['message' => 'User not found'], 404);
-          }
-
-          $user->avatar = $user->avatar
-            ? url('storage/' . $user->avatar)
-            : url('/storage/images/user.png');
-
-
-                return response()->json($user);
-    }
-
+    //Esta funcion sirve para cambiar el avatar
     public function updateAvatar(Request $request)
     {
-        $user = Auth::user();
+        //Se autentica el usuario
         $user = $request->user();
 
-    if (!$user) {
-        return response()->json(['message' => 'User not authenticated'], 401);
-    }
+        //Mensaje de error si el usuario no esta autenticado.
+        if (!$user) {
+            return response()->json(['message' => 'Usuario no autenticado'], 401);
+        }
 
-    if ($request->hasFile('avatar')) {
-        $file = $request->file('avatar');
-        $path = $file->store('images', 'public'); // Guarda en 'storage/app/public/images'
+        //Se busca el avatar actual y se guarda el nuevo
+        if ($request->hasFile('avatar')) {
+            $file = $request->file('avatar');
+            $path = $file->store('images', 'public'); // Guarda en 'storage/app/public/images'
 
-        // Actualiza la ruta del avatar en la base de datos
-        // Aquí utilizamos $user, que ya es una instancia de User
-        $user->avatar = $path;
+            // Actualiza la ruta del avatar en la base de datos
+            // Aquí utilizamos $user, que ya es una instancia de User
+            $user->avatar = $path;
 
-        // Guardamos los cambios en la base de datos
-        $user->save(); // Ahora esto debería funcionar correctamente
+            // Guardamos los cambios en la base de datos
+            $user->save();
 
-        return response()->json(['message' => 'Avatar updated successfully']);
-    }
+            //Se envia un mensaje a la consola
+            return response()->json(['message' => 'Avatar actualizado correctamente']);
+        }
 
-    return response()->json(['message' => 'No avatar uploaded'], 400);
+        //Se envia un mensaje de error a la consola
+        return response()->json(['message' => 'No se acutalizo el avatar'], 400);
     }
 }

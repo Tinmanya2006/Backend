@@ -12,79 +12,99 @@ use Illuminate\Support\Facades\DB;
 
 class ControllerNotificacion extends Controller
 {
-        public function enviarInvitacionGrupo(Request $request, $id) {
 
-            $user = $request->user();
+    public function enviarInvitacionGrupo(Request $request, $id) {
 
-            if (!$user) {
-                return response()->json(['mensaje' => 'Usuario no autenticado'], 401);
-            }
+        // Esto autentica el usuario.
+        $user = $request->user();
 
-            // Busca el grupo usando el ID que se pasa como parámetro
-            $grupo = Grupo::find($id);
-
-            if (!$grupo) {
-                return response()->json(['message' => 'Grupo no encontrado'], 404);
-            }
-
-            // Busca el usuario por el nickname proporcionado
-            $usuario = User::where('nickname', $request->nickname)->first();
-
-            if (!$usuario) {
-                return response()->json(['message' => 'Usuario no encontrado'], 404);
-            }
-
-            // Asegúrate de incluir el idgrupo en la creación de la notificación
-            $notificacion = Notificacion::create([
-                'idusuario' => $usuario->id, // Usa el ID del usuario encontrado
-                'idgrupo' => $grupo->id, // Asegúrate de que el campo se llame 'grupo_id'
-                'titulo' => 'Invitación al Grupo',
-                'mensaje' => 'Has sido invitado a unirte al grupo ' . $grupo->nombre,
-            ]);
-
-            return response()->json(['message' => 'Invitación enviada.', 'notificacion' => $notificacion]);
+        //Mensaje de error si el usuario no esta autenticado.
+        if (!$user) {
+            return response()->json(['mensaje' => 'Usuario no autenticado'], 401);
         }
 
-    public function responderInvitacion(Request $request, $id)
-    {
-        $notificacion = Notificacion::find($id);
+        // Busca el grupo usando el ID que se pasa como parámetro
+        $grupo = Grupo::find($id);
 
-    if (!$notificacion) {
-        return response()->json(['message' => 'Notificación no encontrada'], 404);
-    }
-
-    if ($notificacion->estado !== 'Pendiente') {
-        return response()->json(['message' => 'La invitación ya fue respondida.'], 400);
-    }
-
-    $estado = $request->input('estado');
-    if (!in_array($estado, ['Aceptada', 'Rechazada'])) {
-        return response()->json(['message' => 'Estado inválido.'], 400);
-    }
-
-    $notificacion->estado = $estado;
-    $notificacion->save();
-
-    if ($estado === 'Aceptada') {
-        $idgrupo = $notificacion->idgrupo;
-
-        if (!$idgrupo) {
-            return response()->json(['message' => 'El campo idgrupo es nulo'], 400);
-        }
-
-        $grupo = Grupo::find($idgrupo);
-
+        //Mensaje de error si el grupo no se encontro en la base de datos.
         if (!$grupo) {
             return response()->json(['message' => 'Grupo no encontrado'], 404);
         }
 
-        // Agregar al usuario a los miembros en el campo JSON
-        $grupo->agregarMiembro($notificacion->idusuario);
+        // Busca el usuario por el nickname proporcionado
+        $usuario = User::where('nickname', $request->nickname)->first();
+
+        //Mensaje de error si el usuario no se lo encontro en la base de datos
+        if (!$usuario) {
+            return response()->json(['message' => 'Usuario no encontrado'], 404);
+        }
+
+        // Se crea la notificacion con un texto por defecto.
+        $notificacion = Notificacion::create([
+            'idusuario' => $usuario->id, // Usa el ID del usuario encontrado
+            'idgrupo' => $grupo->id, // Asegúrate de que el campo se llame 'grupo_id'
+            'titulo' => 'Invitación al Grupo',
+            'mensaje' => 'Has sido invitado a unirte al grupo ' . $grupo->nombre,
+        ]);
+
+        //Se envia un mensaje a la consola
+        return response()->json(['message' => 'Invitación enviada.', 'notificacion' => $notificacion]);
     }
 
-    return response()->json(['message' => 'Respuesta registrada correctamente.']);
+    //Esta funcion sirve para responder la notificacion.
+    public function responderInvitacion(Request $request, $id)
+    {
+        //Se busca la notificacion por su id
+        $notificacion = Notificacion::find($id);
+
+        //Mensaje de error si la notificacion no se encontro en la base de datos.
+        if (!$notificacion) {
+            return response()->json(['message' => 'Notificación no encontrada'], 404);
+        }
+
+        //Si la invitacion ya fue respondida se envia un mensaje.
+        if ($notificacion->estado !== 'Pendiente') {
+            return response()->json(['message' => 'La invitación ya fue respondida.'], 400);
+        }
+
+        //Esta es la respuesta de la notificacion
+        $estado = $request->input('estado');
+        if (!in_array($estado, ['Aceptada', 'Rechazada'])) {
+            return response()->json(['message' => 'Estado inválido.'], 400);
+        }
+
+        //Esto se encarga de cambiar el estado de la notificacion correcta.
+        $notificacion->estado = $estado;
+        $notificacion->save();
+
+        //Esto ve si se acepto la solicitud
+        if ($estado === 'Aceptada') {
+
+            //Verifica el id del grupo si es igual al de la notificacion
+            $idgrupo = $notificacion->idgrupo;
+
+            //Mensaje de error que la id del grupo es nula
+            if (!$idgrupo) {
+                return response()->json(['message' => 'El campo idgrupo es nulo'], 400);
+            }
+
+            //Se busca al grupo por su id
+            $grupo = Grupo::find($idgrupo);
+
+            //Mensaje de error si el grupo no se encontro en la base de datos.
+            if (!$grupo) {
+                return response()->json(['message' => 'Grupo no encontrado'], 404);
+            }
+
+            // Agregar al usuario a los miembros en el campo JSON
+            $grupo->agregarMiembro($notificacion->idusuario);
+        }
+
+        //Se envia un mensaje a la consola.
+        return response()->json(['message' => 'Respuesta registrada correctamente.']);
     }
 
+    //Esta funcion sirve para mostrar las notificaciones del usuario autenticado
     public function show(Request $request)
     {
         //Esto autentica a el usuario.

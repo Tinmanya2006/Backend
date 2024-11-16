@@ -54,6 +54,7 @@ class ControllerNota extends Controller
 
     }
 
+     //Esta funcion sirve para crear las notas del grupo.
     public function notagrupo(Request $request, $id)
     {
 
@@ -64,18 +65,23 @@ class ControllerNota extends Controller
             'asignacion' => 'required|max:20',
         ]);
 
+        //Esto Chequea que el usuario esta autenticado y si no lo esta, envia un mensaje de usuario no autenticado.
         if (!auth()->check()) {
             return response()->json(['message' => 'Usuario no autenticado'], 401);
         }
 
+        //Esto verifica que el usuario pertenezca al grupo y envia un mensaje
         if (!$id) {
             return response()->json(['message' => 'El usuario no pertenece a un grupo válido'], 400);
         }
 
+        //Se validan los datos y se define la id en datosValidados.
         $datosvalidados['idgrupo'] = $id;
+
         //Esto crea una nota si los datos se validaron correctamente.
         $nota = Nota::create($datosvalidados);
 
+        //Esto envia un mensaje a la consola de que la nota se a creado correctamente.
         return response()->json([
             'messaje' => 'La nota ha sido creada correctamente',
             'nota' => $nota
@@ -92,11 +98,13 @@ class ControllerNota extends Controller
 
     //Comienzo de Funciones de Actualizar Notas.
 
+    //Esta funcion sirve para actualizar las notas
     public function update(Request $request, $id)
     {
-        //Esto busca al usuario por su id para poder actualizar sus datos.
+        // Esto autentica el usuario.
         $user = $request->user();
 
+        //Mensaje de error si el usuario no esta autenticado.
         if (!$user) {
             return response()->json(['mensaje' => 'Usuario no autenticado'], 401);
         }
@@ -109,17 +117,20 @@ class ControllerNota extends Controller
             ]
         );
 
+        //Se busca la nota por su id y si pertenece al usuario.
         $nota = $user->notas()->find($id);
 
-        //Esto actualiza los datos del usuario, si los datos se validaron correctamente.
+        //Esto actualiza la nota del usuario, si los datos se validaron correctamente.
         if ($nota) {
                 $estado = $datosValidados['estado'] ?? $nota->estado;
                 $finalizacion = $datosValidados['finalizacion'] ?? ($estado === 'Completada' ? now() : $nota->finalizacion);
 
+            //Se cambia el estado y la fecha de finalización de la nota
             $nota->update([
                 'estado' => $estado,
                 'finalizacion' => $finalizacion,
             ]);
+
             //Esto muestra dos mensajes si se han actualizado los datos correctamente
             //y a su vez muestra si los mismos no se pudieron actualizar.
             return response()->json(['messaje' => 'Se ha actualizado el estado de la nota']);
@@ -128,17 +139,21 @@ class ControllerNota extends Controller
         }
     }
 
+    //Esta funcion sirve para actualizar las notas del grupo.
     public function updategrupo(Request $request, $id, $idgrupo)
     {
-       // Esto busca al usuario autenticado
+       // Esto autentica el usuario.
         $user = $request->user();
 
+        //Mensaje de error si el usuario no esta autenticado.
         if (!$user) {
             return response()->json(['mensaje' => 'Usuario no autenticado'], 401);
         }
 
+        //Esto busca al usuario por su id, que es recibida del frontend
         $grupo = Grupo::find($idgrupo);
 
+        // Verifica si se recibió la ID del grupo
         if (!$grupo) {
             return response()->json(['message' => 'La id del grupo es requerida'], 400);
         }
@@ -151,17 +166,20 @@ class ControllerNota extends Controller
             ]
         );
 
+        //Se busca la nota por su id y si pertenece al grupo.
         $nota = Nota::where('id', $id)->where('idgrupo', $idgrupo)->first();
 
-        //Esto actualiza los datos del usuario, si los datos se validaron correctamente.
+        //Esto actualiza los datos de la nota, si los datos se validaron correctamente.
         if ($nota) {
                 $estado = $datosValidados['estado'] ?? $nota->estado;
                 $finalizacion = $datosValidados['finalizacion'] ?? ($estado === 'Completada' ? now() : $nota->finalizacion);
 
+            //Se cambia el estado y la fecha de finalización de la nota
             $nota->update([
                 'estado' => $estado,
                 'finalizacion' => $finalizacion,
             ]);
+
             //Esto muestra dos mensajes si se han actualizado los datos correctamente
             //y a su vez muestra si los mismos no se pudieron actualizar.
             return response()->json(['messaje' => 'Se ha actualizado el estado de la nota']);
@@ -181,10 +199,13 @@ class ControllerNota extends Controller
 
         //Comienzo de Funciones de Eliminar Notas.
 
-        //Esta funcion elimina la nota, hay que probarla.
+        //Esta funcion sirve para eliminar la nota.
      public function destroy(Request $request, $id)
     {
-         $user = $request->user();//Auth::user();  // Obtenemos el usuario autenticado
+        // Esto autentica el usuario.
+         $user = $request->user();
+
+        //Mensaje de error si el usuario no esta autenticado.
          if (!$user) {
              return response()->json(['message' => 'Usuario no autenticado'], 401);
          }
@@ -197,6 +218,8 @@ class ControllerNota extends Controller
 
          // Eliminamos la nota si existe
          $nota->delete();
+
+         //Se envia un mensaje a la consola
          return response()->json(['message' => 'Nota eliminada correctamente'], 200);
     }
 
@@ -204,25 +227,32 @@ class ControllerNota extends Controller
 
      public function destroygrupo(Request $request, $id, $idgrupo)
     {
-         $user = $request->user();//Auth::user();  // Obtenemos el usuario autenticado
+        // Esto autentica el usuario.
+         $user = $request->user();
+
+        //Mensaje de error si el usuario no esta autenticado.
          if (!$user) {
              return response()->json(['message' => 'Usuario no autenticado'], 401);
          }
 
+        //Esto busca al grupo por su id
          $grupo = Grupo::find($idgrupo);
 
+        // Verifica si se recibió la ID del grupo
          if (!$grupo) {
              return response()->json(['message' => 'La id del grupo es requerida'], 400);
          }
 
-         // Verificamos si el usuario tiene una nota con ese ID
+        // Verificamos si el usuario tiene una nota con ese ID
          $nota = Nota::where('id', $id)->where('idgrupo', $idgrupo)->first();
          if (!$nota) {
              return response()->json(['message' => 'Nota no encontrada o no perteneciente al usuario'], 404);
          }
 
-         // Eliminamos la nota si existe
+        // Eliminamos la nota si existe
          $nota->delete();
+
+        //Se envia un mensaje a la consola.
          return response()->json(['message' => 'Nota eliminada correctamente'], 200);
     }
 
@@ -260,14 +290,18 @@ class ControllerNota extends Controller
     }
 
 
+    //Esta funcion sirve para mostrar las notas del grupo.
     public function shownotagrupo(Request $request, $id)
     {
+        // Esto autentica el usuario.
         $user = Auth::user();
 
+        //Mensaje de error si el usuario no esta autenticado.
         if (!$user) {
-            return response()->json(['message' => 'User not authenticated'], 401);
+            return response()->json(['message' => 'Usuario no autenticado'], 401);
         }
 
+        // Verifica si se recibió la ID del grupo
         if (!$id) {
             return response()->json(['message' => 'La id del grupo es requerida'], 400);
         }
@@ -312,6 +346,7 @@ class ControllerNota extends Controller
             ];
         });
 
+        //Esto envia las notas obtenidas.
         return response()->json($notasConUsuario);
     }
 
@@ -326,76 +361,86 @@ class ControllerNota extends Controller
 
         //Comienzo de Funciones de Mostrar Notas Completadas.
 
+    //Esta funcion sirve para mostrar las notas del usuario autenticado
     public function showcompletadas(Request $request)
     {
-    $user = Auth::user();
+        // Esto autentica el usuario.
+        $user = Auth::user();
 
-    if (!$user) {
-        return response()->json(['message' => 'User not authenticated'], 401);
+        //Mensaje de error si el usuario no esta autenticado.
+        if (!$user) {
+            return response()->json(['message' => 'Usuario no autenticado'], 401);
+        }
+
+        //Esto obtiene las notas completadas del usuario
+        $notas = DB::table('notas')
+                    ->select('descripcion', 'categoria', 'finalizacion')
+                    ->where('idusuario', $user->id)
+                    ->where('estado', 'Completada')
+                    ->orderBy('finalizacion', 'desc')
+                    ->limit(5)
+                    ->get();
+
+        //Se envian las notas a la consola
+        return response()->json($notas);
     }
-    $notas = DB::table('notas')
-                ->select('descripcion', 'categoria', 'finalizacion')
-                ->where('idusuario', $user->id)
-                ->where('estado', 'Completada')
-                ->orderBy('finalizacion', 'desc')
-                ->limit(5)
-                ->get();
-
-    return response()->json($notas);
-    }
 
 
-
+    //Esta funcion sirve para mostrar las notas completadas del grupo.
     public function shownotagrupocompletadas(Request $request, $id)
-{
-    $user = Auth::user();
+    {
+        // Esto autentica el usuario.
+        $user = Auth::user();
 
-    if (!$user) {
-        return response()->json(['message' => 'User not authenticated'], 401);
+        //Mensaje de error si el usuario no esta autenticado.
+        if (!$user) {
+            return response()->json(['message' => 'Usuario no autenticado'], 401);
+        }
+
+        // Verifica si se recibió la ID del grupo
+        if (!$id) {
+            return response()->json(['message' => 'La id del grupo es requerida'], 400);
+        }
+
+        // Obtener las notas completadas del grupo
+        $notas = DB::table('notas')
+                    ->select('descripcion', 'prioridad', 'asignacion', 'id', 'estado')
+                    ->where('idgrupo', '=', $id) // Solo notas que pertenecen a un grupo
+                    ->where('estado',  'Completada')
+                    ->get();
+
+        // Obtener los nicknames de los miembros asignados
+        $miembrosIds = $notas->pluck('asignacion')->unique(); // Obtener los nicknames únicos
+
+        // Obtener miembros con sus avatares completos
+        $miembros = DB::table('users')
+            ->whereIn('nickname', $miembrosIds) // Cambié `id` a `nickname`
+            ->select('id as idusuario', 'nickname', 'avatar')
+            ->get();
+
+        // Construir URL completa para los avatares o proporcionar un avatar por defecto
+        foreach ($miembros as $miembro) {
+            $miembro->avatar = $miembro->avatar
+                ? url('storage/' . $miembro->avatar)
+                : url('/storage/images/user.png');
+        }
+
+        // Asociar cada nota con el avatar correspondiente
+        $notasConAvatar = $notas->map(function ($nota) use ($miembros) {
+            $miembro = $miembros->firstWhere('nickname', $nota->asignacion); // Buscar el miembro por nickname
+
+            return [
+                'id' => $nota->id,
+                'descripcion' => $nota->descripcion,
+                'prioridad' => $nota->prioridad,
+                'estado' => $nota->estado,
+                'asignacion' => $nota->asignacion,
+                'avatar' => $miembro ? $miembro->avatar : url('/storage/images/user.png') // Asigna el avatar o un avatar por defecto
+            ];
+        });
+
+        //Envia las notas completadas del grupo a la consola
+        return response()->json($notasConAvatar);
     }
-
-    if (!$id) {
-        return response()->json(['message' => 'La id del grupo es requerida'], 400);
-    }
-
-    // Obtener las notas completadas del grupo
-    $notas = DB::table('notas')
-                ->select('descripcion', 'prioridad', 'asignacion', 'id', 'estado')
-                ->where('idgrupo', '=', $id) // Solo notas que pertenecen a un grupo
-                ->where('estado',  'Completada')
-                ->get();
-
-    // Obtener los nicknames de los miembros asignados
-    $miembrosIds = $notas->pluck('asignacion')->unique(); // Obtener los nicknames únicos
-
-    // Obtener miembros con sus avatares completos
-    $miembros = DB::table('users')
-        ->whereIn('nickname', $miembrosIds) // Cambié `id` a `nickname`
-        ->select('id as idusuario', 'nickname', 'avatar')
-        ->get();
-
-    // Construir URL completa para los avatares o proporcionar un avatar por defecto
-    foreach ($miembros as $miembro) {
-        $miembro->avatar = $miembro->avatar
-            ? url('storage/' . $miembro->avatar)
-            : url('/storage/images/user.png');
-    }
-
-    // Asociar cada nota con el avatar correspondiente
-    $notasConAvatar = $notas->map(function ($nota) use ($miembros) {
-        $miembro = $miembros->firstWhere('nickname', $nota->asignacion); // Buscar el miembro por nickname
-
-        return [
-            'id' => $nota->id,
-            'descripcion' => $nota->descripcion,
-            'prioridad' => $nota->prioridad,
-            'estado' => $nota->estado,
-            'asignacion' => $nota->asignacion,
-            'avatar' => $miembro ? $miembro->avatar : url('/storage/images/user.png') // Asigna el avatar o un avatar por defecto
-        ];
-    });
-
-    return response()->json($notasConAvatar);
-}
     //Terminación de Funcion de Mostrar Notas Completadas.
 }
